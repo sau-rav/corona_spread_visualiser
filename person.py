@@ -13,21 +13,15 @@ class Person:
         self.y_target = np.random.random() * frame_wid
         self.quarantined = False
         self.recovery_time = recovery_time
-        self.infected_count = 0
         self.quarantine_start_idx = -1
         self.states = ['inf', 'sus', 'rec']
+        self.dx_pos = 0
+        self.dy_pos = 0
         if np.random.random() < init_infection_per / 100:
             self.stateIdx = 0
-            self.infected_count += 1
         else:
             self.stateIdx = 1
         self.colors = ['red', 'blue', 'gray']
-        if np.random.random() < 0.5:
-            self.dx_pos = 0
-            self.dy_pos = 0
-        else:
-            self.dx_pos = (self.x_target - self.x_pos) / self.speed
-            self.dy_pos = (self.y_target - self.y_pos) / self.speed
 
     def get_state(self):
         return self.states[self.stateIdx]
@@ -38,7 +32,7 @@ class Person:
     def recover(self):
         self.stateIdx = 2
 
-    def get_random_target(self):
+    def initiate_again(self):
         self.x_target = np.random.random() * self.lenght
         self.y_target = np.random.random() * self.width
         if self.quarantined:
@@ -54,23 +48,26 @@ class Person:
                 self.recover()
                 self.quarantined = False
                 self.quarantine_start_idx = -1
-                self.get_random_target()
+                self.initiate_again()
                 return True
 
     def update_location(self):
         if self.quarantined:
             return
+        if np.random.random() < 0.5:
+            self.dx_pos = 0
+            self.dy_pos = 0
+        else:
+            self.dx_pos = (self.x_target - self.x_pos) / self.speed
+            self.dy_pos = (self.y_target - self.y_pos) / self.speed
         self.x_pos = self.x_pos + self.dx_pos
         self.y_pos = self.y_pos + self.dy_pos
 
-        if self.get_dist(self.x_target, self.y_target) < 4:
-            self.get_random_target()
+        if self.distanceTo(self.x_target, self.y_target) < 4:
+            self.initiate_again()
 
     def get_color(self):
         return self.colors[self.stateIdx]
 
-    def get_pos(self):
-        return (self.x_pos, self.y_pos)
-
-    def get_dist(self, x_pos, y_pos):
+    def distanceTo(self, x_pos, y_pos):
         return np.sqrt((self.x_pos - x_pos)**2 + (self.y_pos - y_pos)**2)

@@ -49,7 +49,7 @@ class Population:
                     if q.ID == p.ID or q.get_state() == 'inf' or p.quarantined or p.get_state() == 'rec':
                         pass
                     else:
-                        dist = p.get_dist(q.x_pos, q.y_pos)
+                        dist = p.distanceTo(q.x_pos, q.y_pos)
                         if dist < self.trans_rad:
                             if q.get_state() == 'sus':
                                 if np.random.random() < self.trans_probab / 100:
