@@ -33,9 +33,6 @@ class Person:
         return self.states[self.stateIdx]
     
     def infect(self):
-        if self.infected_count >= 1:
-            return
-        self.infected_count += 1
         self.stateIdx = 0
     
     def recover(self):
@@ -55,13 +52,14 @@ class Person:
         if self.quarantine_start_idx != -1:
             if index - self.quarantine_start_idx >= self.recovery_time:
                 self.recover()
-                if self.quarantined:
-                    self.quarantined = False
-                    self.quarantine_start_idx = -1
-                    self.get_random_target()
-                    return True
+                self.quarantined = False
+                self.quarantine_start_idx = -1
+                self.get_random_target()
+                return True
 
     def update_location(self):
+        if self.quarantined:
+            return
         self.x_pos = self.x_pos + self.dx_pos
         self.y_pos = self.y_pos + self.dy_pos
 

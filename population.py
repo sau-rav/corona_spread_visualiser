@@ -17,6 +17,7 @@ class Population:
         self.infected_num = 0
         self.recovered_num = 0
         self.quartine_number = 0
+        self.reached_tolerence = False
         self.persons = self.initiatePopulation()
 
     def initiatePopulation(self):
@@ -24,9 +25,9 @@ class Population:
         for i in range(self.pop_size):
             p = None
             if not self.rand_recov:
-                p = Person(i, np.random.random() * (self.grid_len + self.grid_width) / 2, self.grid_len, self.grid_width, self.inf_per, self.recov_time)
+                p = Person(i, np.random.random() * (self.grid_len + self.grid_width) * 2, self.grid_len, self.grid_width, self.inf_per, self.recov_time)
             else:
-                p = Person(i, np.random.random() * (self.grid_len + self.grid_width) / 2, self.grid_len, self.grid_width, self.inf_per, np.random.randint(10, 100))
+                p = Person(i, np.random.random() * (self.grid_len + self.grid_width) * 2, self.grid_len, self.grid_width, self.inf_per, np.random.randint(100, 200))
             if p.get_state() == 'inf':
                 self.infected_num += 1
             persons.append(p)
@@ -45,7 +46,7 @@ class Population:
             if p.get_state() == 'inf':
                 self.infected_num = self.infected_num + 1
                 for q in self.persons:
-                    if q.ID == p.ID or q.get_state() == 'inf' or p.quarantined:
+                    if q.ID == p.ID or q.get_state() == 'inf' or p.quarantined or p.get_state() == 'rec':
                         pass
                     else:
                         dist = p.get_dist(q.x_pos, q.y_pos)
@@ -53,17 +54,18 @@ class Population:
                             if q.get_state() == 'sus':
                                 if np.random.random() < self.trans_probab / 100:
                                     q.infect()
-                                    if np.random.random() < 0.4 and self.quartine_number / self.pop_size < self.quar_limit:
+                                    if np.random.random() < 0.0012 and self.quartine_number / self.pop_size < self.quar_limit:
                                         q.quarantined = True
                                         q.quarantine_start_idx = frame
-                            elif q.get_state() == 'rec':
-                                if np.random.random() < self.trans_probab / (100 * self.infected_num):
-                                    q.infect()
-                                    if q.get_state() == 'inf' and np.random.random() < 0.4 and self.quartine_number / self.pop_size < self.quar_limit:
-                                        q.quarantined = True
-                                        q.quarantine_start_idx = frame
-                if self.infected_num > self.pop_size / 2 and np.random.random() < 0.5 and self.quartine_number / self.pop_size < self.quar_limit:
+                                        self.quartine_number += 1
+                if np.random.random() < 0.0012 and self.quartine_number / self.pop_size < self.quar_limit and not p.quarantined:
                     p.quarantined = True
                     p.quarantine_start_idx = frame
+                    self.quartine_number += 1
+
+        offsets = np.array([[p.x_pos for p in self.persons], [p.y_pos for p in self.persons]])
+        color_list = [p.get_color() for p in self.persons]
+        size_list = [7 for p in self.persons]
+        return offsets, color_list, size_list
 
         

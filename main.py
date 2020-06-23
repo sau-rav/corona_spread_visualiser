@@ -3,8 +3,8 @@ from population import *
 
 population_size = 300 # toatal population
 init_infected_percentage = 1 # percentage of population initially infected
-recovery_time = 10 # or fix randomly for every person
-quarantine_limit = 50 # max population that can be quarantined
+recovery_time = 100 # or fix randomly for every person
+quarantine_limit = 0.5 # max population that can be quarantined
 transmission_radius = 4 # radius under which infection if probable
 transmission_probab = 3 # probability of infecting if in transmission radius
 frame_len = 200 # size of frame
@@ -34,18 +34,14 @@ recovered = [0]
 timestamp = [0]
 
 def animate(frame, recovered, infected, timestamp):
-    model.update(frame)
+    offsets, color_list, size_list = model.update(frame)
     infected.append(model.infected_num)
     recovered.append(model.recovered_num)
     timestamp.append(frame)
 
-    color_list = [p.get_color() for p in model.persons]
-    size_list = [7 for p in model.persons]
-
-    offsets = np.array([[p.x_pos for p in model.persons], [p.y_pos for p in model.persons]])
-    scat_plot.set_offsets(np.ndarray.transpose(offsets))
-    scat_plot.set_color(color_list)
     scat_plot.set_sizes(size_list)
+    scat_plot.set_color(color_list)
+    scat_plot.set_offsets(np.ndarray.transpose(offsets))
     infected_population.set_data(timestamp, infected)
     recovered_population.set_data(timestamp, recovered)
     return scat_plot, infected_population, recovered_population
