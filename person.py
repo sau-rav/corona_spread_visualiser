@@ -9,14 +9,16 @@ class Person:
         self.width = frame_wid
         self.x_pos = np.random.random() * frame_len
         self.y_pos = np.random.random() * frame_wid
-        self.x_target = np.random.random() * frame_len
-        self.y_target = np.random.random() * frame_wid
+        if np.random.random() < 0.5:
+            self.velX = 0
+            self.velY = 0
+        else:
+            self.velX = (np.random.random() - 0.5) * frame_len / 50
+            self.velY = (np.random.random() - 0.5) * frame_wid / 50
         self.quarantined = False
         self.recovery_time = recovery_time
         self.quarantine_start_idx = -1
         self.states = ['inf', 'sus', 'rec']
-        self.dx_pos = 0
-        self.dy_pos = 0
         if np.random.random() < init_infection_per / 100:
             self.stateIdx = 0
         else:
@@ -32,15 +34,13 @@ class Person:
     def recover(self):
         self.stateIdx = 2
 
-    def initiate_again(self):
-        self.x_target = np.random.random() * self.lenght
-        self.y_target = np.random.random() * self.width
+    def getNewVelocities(self):
         if self.quarantined:
-            self.dx_pos = 0
-            self.dy_pos = 0
+            self.velX = 0
+            self.velY = 0
         else:
-            self.dx_pos = (self.x_target - self.x_pos) / self.speed
-            self.dy_pos = (self.y_target - self.y_pos) / self.speed
+            self.velX = (np.random.random() - 0.5) * self.lenght / 50
+            self.velY = (np.random.random() - 0.5) * self.width / 50
 
     def check_recovery(self, index):
         if self.quarantine_start_idx != -1:
@@ -48,23 +48,22 @@ class Person:
                 self.recover()
                 self.quarantined = False
                 self.quarantine_start_idx = -1
-                self.initiate_again()
+                self.getNewVelocities()
                 return True
 
     def update_location(self):
         if self.quarantined:
             return
-        if np.random.random() < 0.5:
-            self.dx_pos = 0
-            self.dy_pos = 0
-        else:
-            self.dx_pos = (self.x_target - self.x_pos) / self.speed
-            self.dy_pos = (self.y_target - self.y_pos) / self.speed
-        self.x_pos = self.x_pos + self.dx_pos
-        self.y_pos = self.y_pos + self.dy_pos
+        self.x_pos = self.x_pos + self.velX
+        self.y_pos = self.y_pos + self.velY
 
-        if self.distanceTo(self.x_target, self.y_target) < 4:
-            self.initiate_again()
+        # if abs(self.x_pos - 0) < 1 or abs(self.x_pos - self.lenght) < 1 or abs(self.y_pos - 0) < 1 or abs(self.y_pos - self.width) < 1:
+        #     self.x_pos = np.random.random() * self.lenght
+        #     self.y_pos = np.random.random() * self.width
+        if abs(self.x_pos - 0) < 1 or abs(self.x_pos - self.lenght) < 1:
+            self.velX = -self.velX
+        if abs(self.y_pos - 0) < 1 or abs(self.y_pos - self.width) < 1:
+            self.velY = -self.velY
 
     def get_color(self):
         return self.colors[self.stateIdx]
